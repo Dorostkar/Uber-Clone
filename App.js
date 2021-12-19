@@ -27,7 +27,6 @@ export default function App() {
               options={{ headerShow: false }}
             />
           </Stack.Navigator>
-          {/* <HomeScree /> */}
         </SafeAreaProvider>
       </NavigationContainer>
     </Provider>
