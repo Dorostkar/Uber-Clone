@@ -5,21 +5,42 @@ import { useSelector } from "react-redux";
 import tw from "tailwind-react-native-classnames";
 
 import { GOOGLE_MAPS_APIKEY } from "@env";
-import { selectOrigin, selectDestination } from "../redux/slices/navSlice";
+import {
+  selectOrigin,
+  selectDestination,
+  setTravelTimeInformation,
+} from "../redux/slices/navSlice";
+import { useDispatch } from "react-redux";
 
 const Map = () => {
   const origin = useSelector(selectOrigin);
   const destination = useSelector(selectDestination);
   const mapRef = useRef(null);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    if (!origin && !destination) return;
+    if (!origin || !destination) return;
 
     mapRef.current.fitToSuppliedMarkers(["origin", "destination"], {
       edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
     });
   }, [origin, destination]);
 
+  // Calculating travel time
+  useEffect(() => {
+    if (!origin || !destination) return;
+
+    const getTravelTime = async () => {
+      const URL = `https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins=${origin.description}&destinations=${destination.description}&key=${GOOGLE_MAPS_APIKEY}`;
+
+      fetch(URL)
+        .then((res) => res.json())
+        .then((data) => {
+          dispatch(setTravelTimeInformation(data.rows[0].elements[0]));
+        });
+    };
+    getTravelTime();
+  }, [origin, destination, GOOGLE_MAPS_APIKEY]);
   return (
     <MapView
       ref={mapRef}
